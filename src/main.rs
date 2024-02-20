@@ -1,11 +1,11 @@
 use bytes;
+use feed_rs::parser;
 use reqwest::get;
-use rss::Channel;
 use std::error::Error;
 
 mod test;
 
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
+pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -14,8 +14,8 @@ async fn main() -> Result<()> {
     let urls = vec!["https://rustcc.cn/rss", "https://rustmagazine.org/feed.xml"];
     let texts = get_text(urls);
     for content in texts.await? {
-        let channel = Channel::read_from(&content[..])?;
-        println!("{:?}", channel);
+        let feed = parser::parse(&content[..])?;
+        println!("{:?}", feed.title);
     }
     Ok(())
 }
