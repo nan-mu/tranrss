@@ -8,14 +8,14 @@ appenders:
     encoder:
       pattern: "{d} - {m}{n}"
 root:
-  level: info
+  level: debug
   appenders:
     - stdout
 loggers:
   app::backend::db:
     level: info
   app::requests:
-    level: info
+    level: debug
     appenders:
       - requests
     additive: false
