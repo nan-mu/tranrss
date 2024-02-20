@@ -1,4 +1,3 @@
-use async_std::task;
 use bytes;
 use reqwest::get;
 use rss::Channel;
@@ -9,8 +8,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //https://rustcc.cn/rss
     //https://rustmagazine.org/feed.xml
     let urls = vec!["https://rustcc.cn/rss", "https://rustmagazine.org/feed.xml"];
-    let texts = task::block_on(get_text(urls))?;
-    for content in texts {
+    let texts = get_text(urls);
+    for content in texts.await? {
         let channel = Channel::read_from(&content[..])?;
         println!("{:?}", channel);
     }
