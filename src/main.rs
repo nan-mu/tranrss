@@ -33,8 +33,9 @@ async fn main() -> Result<()> {
     for content in texts.await? {
         feeds.push(parser::parse(&content[..])?);
         info!("{:?}", feeds.last().unwrap().feed_type);
+        extract_articles_title(&feeds.last().unwrap()).await?;
     }
-    extract_articles_title(&feeds[0]).await?;
+
     debug!("end");
     Ok(())
 }
