@@ -54,18 +54,22 @@ async fn get_text(urls: Vec<&'static str>) -> Result<Vec<bytes::Bytes>> {
     Ok(res)
 }
 
-async fn extract_articles_title(feed: &model::Feed) -> Result<()> {
+async fn extract_articles_title(feed: &model::Feed) -> Result<Vec<String>> {
     //从订阅源提取文章
+    let mut articles = Vec::new();
     for entry in &feed.entries {
         debug!("文章标题：{}", entry.title.as_ref().unwrap().content);
         match entry.content.as_ref() {
+            //迁移文章到新变量中
             Some(content) => {
                 debug!("文章内容：{}", content.body.as_ref().unwrap());
+                articles.push(content.body.as_ref().unwrap().clone());
             }
             None => {
                 debug!("文章内容：{}", entry.summary.as_ref().unwrap().content);
+                articles.push(entry.summary.as_ref().unwrap().content.clone());
             }
         }
     }
-    Ok(())
+    Ok(articles)
 }
