@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
         extract_articles_title(&feeds.last().unwrap()).await?;
     }
 
-    debug!("end");
+    info!("end");
     Ok(())
 }
 
