@@ -1,5 +1,5 @@
 use bytes;
-use feed_rs::parser;
+use feed_rs::{model, parser};
 use log::{debug, info};
 use log4rs;
 use reqwest::get;
@@ -22,11 +22,20 @@ async fn main() -> Result<()> {
         //RSS 2.O(理论上是1.1)。有title update description links
         "https://readrust.net/all/feed.rss", //文章在entries有id title updated authors summary(正文在这) links
     ];
+    //任务路径：
+    //1. 从订阅源提取文章。
+    //2. 提取需要翻译的段落。
+    //  a. 有的文章在content中，有的在summary中，需要逻辑判断一下。
+    //3. 在内存中组合翻译内容和原文。
+    //4. 输出到文件，拼合链接。
     let texts = get_text(urls);
+    let mut feeds = Vec::new();
     for content in texts.await? {
-        let feed = parser::parse(&content[..])?;
-        info!("{:?}", feed.feed_type);
+        feeds.push(parser::parse(&content[..])?);
+        info!("{:?}", feeds.last().unwrap().feed_type);
     }
+    extract_articles_title(&feeds[0]).await?;
+    debug!("end");
     Ok(())
 }
 
@@ -42,4 +51,20 @@ async fn get_text(urls: Vec<&'static str>) -> Result<Vec<bytes::Bytes>> {
     }
 
     Ok(res)
+}
+
+async fn extract_articles_title(feed: &model::Feed) -> Result<()> {
+    //从订阅源提取文章
+    for entry in &feed.entries {
+        debug!("文章标题：{}", entry.title.as_ref().unwrap().content);
+        match entry.content.as_ref() {
+            Some(content) => {
+                debug!("文章内容：{}", content.body.as_ref().unwrap());
+            }
+            None => {
+                debug!("文章内容：{}", entry.summary.as_ref().unwrap().content);
+            }
+        }
+    }
+    Ok(())
 }
