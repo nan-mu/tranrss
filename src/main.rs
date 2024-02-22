@@ -1,5 +1,8 @@
 use bytes;
-use feed_rs::{model, parser};
+use feed_rs::{
+    model::{self, FeedType},
+    parser,
+};
 use log::{debug, info};
 use log4rs;
 use reqwest::get;
@@ -59,15 +62,19 @@ async fn extract_articles_title(feed: &model::Feed) -> Result<Vec<String>> {
     let mut articles = Vec::new();
     for entry in &feed.entries {
         debug!("文章标题：{}", entry.title.as_ref().unwrap().content);
-        match entry.content.as_ref() {
+        match feed.feed_type {
             //迁移文章到新变量中
-            Some(content) => {
-                debug!("文章内容：{}", content.body.as_ref().unwrap());
-                articles.push(content.body.as_ref().unwrap().clone());
+            FeedType::Atom => {
+                let content = entry.content.as_ref().unwrap().body.as_ref().unwrap();
+                debug!("文章内容：{}", content);
+                articles.push(content.clone());
             }
-            None => {
+            FeedType::RSS2 | FeedType::RSS1 => {
                 debug!("文章内容：{}", entry.summary.as_ref().unwrap().content);
                 articles.push(entry.summary.as_ref().unwrap().content.clone());
+            }
+            _ => {
+                panic!("为适配的订阅源类型");
             }
         }
     }
