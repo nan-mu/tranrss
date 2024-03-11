@@ -74,7 +74,7 @@ async fn extract_articles_title(feed: &model::Feed) -> Result<Vec<String>> {
                 articles.push(entry.summary.as_ref().unwrap().content.clone());
             }
             _ => {
-                panic!("为适配的订阅源类型");
+                panic!("未适配的订阅源类型");
             }
         }
     }
